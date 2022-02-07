@@ -592,6 +592,8 @@ components:
           example: >-
             https://<dominioOrganizzativo>/rest/inad/v1/domiciliodigitale/elenco/{id}/risultato
   securitySchemes:
+  
+    # non ricordo che sia stato previsto l'utilizzo di https://swagger.io/docs/specification/authentication/api-keys/
     Authorization:
       type: apiKey
       name: Authorization
