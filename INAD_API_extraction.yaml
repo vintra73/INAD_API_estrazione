@@ -1,21 +1,15 @@
 openapi: 3.0.1
 info:
   title: INAD - Domicilio Digitale
-  description: >-
+  description: 
     API rese disponibili da INAD al Catalogo delle API previsto nel modello di
     interoperabilità delle pubbliche amministrazioni.
 
-
-    Pattern Model applicati:
+    Pattern Model applicati CRUD_REST, [ID_AUTH_REST_02] Direct Trust con certificato X.509, 
+    [INTEGRITY_REST_01] Integrità del payload del messaggio REST, [NONBLOCK_PULL_REST] Not Blocking Pull REST
     
     # manca [BLOCK_REST] Blocking REST e [ID_AUTH_CHANNEL_01] Direct Trust Transport-Level Security e va eliminato CRUD_REST, vedi documento operativo “Pattern sicurezza” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
-    - CRUD_REST
-
-    - [ID_AUTH_REST_02] Direct Trust con certificato X.509
-
-    - [INTEGRITY_REST_01] Integrità del payload del messaggio REST
-
-    - [NONBLOCK_PULL_REST] Not Blocking Pull REST
+      
   contact:
   
     # da verificare  
@@ -44,14 +38,14 @@ paths:
     post:
       tags:
         - API ESTRAZIONI MULTIPLE
-      summary: >-
+      description: 
         Consente di inserire una richiesta di estrazione di domicili digitali a
         partire dall'elenco di codici fiscali forniti (fino ad un massimo di
         1.000). Per ogni codice fiscale si ottiene il domicilio digitale
         corrispondente al momento dell'estrazione e, in caso di domicilio
         digitale eletto in qualità di Professionista, anche l'attività
-        professionale esercitata. L'elaborazione della richiesta è asincrona:
-        l'elenco, identificato da un codice univoco,  è reso disponibile
+        professionale esercitata. L'elaborazione della richiesta è asincrona,
+        l'elenco, identificato da un codice univoco, è reso disponibile
         mediante un servizio di recupero.
       operationId: richiestaElencoDomiciliDigitali
       requestBody:
@@ -63,7 +57,7 @@ paths:
       responses:
         # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '202':
-          description: >-
+          description: 
             JSON di risposta attraverso il quale l'Erogatore fornisce, insieme
             all'acknowledgement della richiesta, l'URL per interrogare lo stato
             di processamento utilizzando l'<i>HTTP header Location</i>. L'elenco
@@ -118,7 +112,7 @@ paths:
     get:
       tags:
         - API ESTRAZIONI PUNTUALI
-      summary: >-
+      description: 
         Consente di ottenere il domicilio digitale corrispondente al codice
         fiscale al momento della consultazione e, in caso di domicilio digitale
         eletto in qualità di Professionista, anche l'attività professionale
@@ -136,7 +130,7 @@ paths:
       responses:
         # per gli http status da gestire vedi pattern [BLOCK_REST] Blocking REST Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf     
         '200':
-          description: >-
+          description: 
             JSON di risposta che restituisce il domicilio digitale estratto. Per
             un codice fiscale è possibile estrarre al massimo due domicili
             digitali eletti in qualità di persona fisica/Ente e/o
@@ -192,7 +186,7 @@ paths:
     get:
       tags:
         - API ESTRAZIONI PUNTUALI
-      summary: >-
+      description: 
         Fornito in input il domicilio digitale (indirizzo PEC), codice fiscale e
         data, il servizio consente di verificare se, alla data indicata, il
         domicilio digitale era associato al codice fiscale indicato.
@@ -223,8 +217,8 @@ paths:
       responses:
         # per gli http status da gestire vedi pattern [BLOCK_REST] Blocking REST Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf     
         '200':
-          description: >-
-            JSON di risposta che restituisce l'esito della verifica: domicilio
+          description: 
+            JSON di risposta che restituisce l'esito della verifica del domicilio digitale
             associato (<i>true</i>) o domicilio non associato (<i>false</i>).
           content:
             application/json:
@@ -276,7 +270,7 @@ paths:
     get:
       tags:
         - API ESTRAZIONI MULTIPLE
-      summary: >-
+      description: 
         Consente di recuperare l'elenco dei domicili digitali individuato dal
         codice identificativo univoco.
       operationId: recuperoElencoDomiciliDigitali
@@ -291,7 +285,7 @@ paths:
       responses:
         # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '200':
-          description: >-
+          description: 
             Risposta di tipo JSON che rappresenta l'elenco dei domicili digitali
             estratti. Per un codice fiscale è possibile estrarre al massimo due
             domicili digitali eletti in qualità di persona fisica/Ente e/o
@@ -349,7 +343,7 @@ paths:
     get:
       tags:
         - API ESTRAZIONI MULTIPLE
-      summary: >-
+      description: 
         Consente di verificare lo stato del processamento della richiesta
         dell'elenco dei domicili digitali individuato dal codice identificativo
         univoco.
@@ -365,24 +359,22 @@ paths:
       responses:
         # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '200':
-          description: >-
+          description: 
             JSON di risposta attraverso il quale l'Erogatore indica, sulla base
             dello stato del processamento, che l'operazione non è completata.
           content:
             application/json:
               schema:
-                $ref: >-
-                  #/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali
+                $ref: '#/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali'
         '303':
-          description: >-
+          description: 
             JSON di risposta attraverso il quale l'Erogatore indica, sulla base
             dello stato del processamento, che l'elenco è pronto all'URL
             indicato nell'<i>HTTP header Location</i>.
           content:
             application/json:
               schema:
-                $ref: >-
-                  #/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali
+                $ref: '#/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali'
         '400':
           description: BAD_REQUEST
           content:
@@ -421,8 +413,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: >-
-                  #/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali
+                $ref: '#/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali'
       security:
         - Authorization:
             - global
@@ -486,7 +477,7 @@ components:
         dataOraRichiesta:
           # indicare format date-time
           type: string
-          description: >-
+          description: 
             Data/Ora di inserimento della richiesta in formato <dd/MM/yyyy
             hh:mm:ss>
           example: 20/11/2021 17:32:12
@@ -507,7 +498,7 @@ components:
             example: '[<cf1>,<cf2>,<cf3>]'
         riferimentoPratica:
           type: string
-          description: >-
+          description: 
             Riferimento del procedimento amministrativo per il quale si richiede
             l'elenco
           example: <num_protocollo|num_fascicolo|num_verbale>
@@ -625,11 +616,10 @@ components:
           example: Richiesta elenco in fase di processamento
         href:
           type: string
-          description: >-
+          description:
             Posizione alla quale è disponibile scaricare il risultato
             dell'elaborazione.
-          example: >-
-            https://<dominioOrganizzativo>/rest/inad/v1/domiciliodigitale/elenco/{id}/risultato
+          example: https://<dominioOrganizzativo>/rest/inad/v1/domiciliodigitale/elenco/{id}/risultato
   securitySchemes:
   
     # non ricordo che sia stato previsto l'utilizzo di https://swagger.io/docs/specification/authentication/api-keys/
