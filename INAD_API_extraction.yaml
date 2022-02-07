@@ -7,7 +7,8 @@ info:
 
 
     Pattern Model applicati:
-
+    
+    # manca [BLOCK_REST] Blocking REST e [ID_AUTH_CHANNEL_01] Direct Trust Transport-Level Security e va eliminato CRUD_REST, vedi documento operativo “Pattern sicurezza” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
     - CRUD_REST
 
     - [ID_AUTH_REST_02] Direct Trust con certificato X.509
@@ -16,14 +17,24 @@ info:
 
     - [NONBLOCK_PULL_REST] Not Blocking Pull REST
   contact:
+  
+    # da verificare  
     name: Infocamere S.C.p.A.
     url: https://www.infocamere.it/
   license:
+  
+    # da verificare    
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
+    
+  # eliminare -SNAPSHOT im contrasto con [RAC_GEN_002] Endpoint delle API, vedi documento operativo “Raccomandazioni di implementazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
   version: 1.0.0-SNAPSHOT
 servers:
+
+  # da consolidare considerando che il prefisso /rest/inad/v1/domiciliodigitale è da includere nell'URL 
   - url: https://domiciliodigitaleapi.oscl.infocamere.it
+  
+  # da verificare
     description: Generated server url
 tags:
   - name: API ESTRAZIONI MULTIPLE
@@ -50,6 +61,7 @@ paths:
               $ref: '#/components/schemas/RichiestaElencoDomiciliDigitali'
         required: true
       responses:
+        # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '202':
           description: >-
             JSON di risposta attraverso il quale l'Erogatore fornisce, insieme
@@ -93,6 +105,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errore'
         default:
+          # da verifica, l'attuale designe ammette risposte per per differenti http status
           description: RispostaRichiestaElencoDomiciliDigitali
           content:
             application/json:
@@ -117,9 +130,11 @@ paths:
           description: CF per cui si effettua la ricerca
           required: true
           schema:
+            # sarebbe il caso di definire uno schema per i CF aggiungendo regexpressione per validazione IMPORTANT: vale tutte le volte che si utilizza CF
             type: string
           example: '01234567890'
       responses:
+        # per gli http status da gestire vedi pattern [BLOCK_REST] Blocking REST Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf     
         '200':
           description: >-
             JSON di risposta che restituisce il domicilio digitale estratto. Per
@@ -164,6 +179,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errore'
         default:
+          # da verifica, l'attuale designe ammette risposte per per differenti http status
           description: RispostaRicercaDomicilioDigitale
           content:
             application/json:
@@ -194,15 +210,18 @@ paths:
           description: Indirizzo del domicilio da ricercare
           required: true
           schema:
+            # sarebbe il caso di definire uno schema per i domicilio digitale aggiungendo regexpressione per validazione (al momento è una PEC=indirizzo email) IMPORTANT: vale tutte le volte che si utilizza CF
             type: string
         - name: data
           in: query
           description: Data in formato ddMMyyyy
           required: true
           schema:
+            # aggiunfere format date
             type: string
           example: '03112021'
       responses:
+        # per gli http status da gestire vedi pattern [BLOCK_REST] Blocking REST Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf     
         '200':
           description: >-
             JSON di risposta che restituisce l'esito della verifica: domicilio
@@ -244,6 +263,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errore'
         default:
+          # da verifica, l'attuale designe ammette risposte per per differenti http status
           description: RispostaVerificaDomicilioDigitale
           content:
             application/json:
@@ -269,6 +289,7 @@ paths:
             type: string
           example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
       responses:
+        # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '200':
           description: >-
             Risposta di tipo JSON che rappresenta l'elenco dei domicili digitali
@@ -315,6 +336,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errore'
         default:
+          # da verifica, l'attuale designe ammette risposte per per differenti http status
           description: RispostaElencoDomiciliDigitali
           content:
             application/json:
@@ -341,6 +363,7 @@ paths:
             type: string
           example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
       responses:
+        # per gli http status da gestire vedi pattern [NONBLOCK_PULL_REST] Not Blocking Pull REST nel documento operativo “Pattern interazione” in https://www.agid.gov.it/sites/default/files/repository_files/linee_guida_interoperabilit_tecnica_pa.pdf
         '200':
           description: >-
             JSON di risposta attraverso il quale l'Erogatore indica, sulla base
@@ -393,6 +416,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Errore'
         default:
+          # da verifica, l'attuale designe ammette risposte per per differenti http status
           description: RispostaStatoRichiestaElencoDomiciliDigitali
           content:
             application/json:
@@ -404,6 +428,7 @@ paths:
             - global
 components:
   schemas:
+    # per assicurare la correttezza della risposta da valutare la possibilità di definire schemi per singole http status
     Errore:
       required:
         - status
@@ -445,6 +470,7 @@ components:
       type: object
       properties:
         stato:
+          # valutare la possibilità di definire un enum per gli stati (es: PRESA_INCARICO, IN_ELABORAZIONE, DISPONIBILE)
           type: string
           description: Stato della richiesta
           example: Accettato
@@ -453,10 +479,12 @@ components:
           description: Messaggio di conferma dell'avvenuta presa in carico della richiesta
           example: Richiesta elenco presa in carico
         id:
+          # definire almeno maxLength
           type: string
           description: Codice identificativo univoco della richiesta di estrazione
           example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
         dataOraRichiesta:
+          # indicare format date-time
           type: string
           description: >-
             Data/Ora di inserimento della richiesta in formato <dd/MM/yyyy
@@ -473,6 +501,7 @@ components:
           description: Array di codici fiscali in input
           example: '[<cf1>,<cf2>,<cf3>]'
           items:
+            # vale osservazione su tipizzazione CF
             type: string
             description: Array di codici fiscali in input
             example: '[<cf1>,<cf2>,<cf3>]'
@@ -489,10 +518,12 @@ components:
       type: object
       properties:
         motivazione:
+          # valutare possibilità di definire enum (ad esempio CESSAZIONE_UFFICIO, CESSAZIONE_VOLONTARIA
           type: string
           description: Motivazione cessazione
           example: <CESSAZIONE_UFFICIO|CESSAZIONE_VOLONTARIA>
         dataFineValidita:
+          # indicare format date
           type: string
           description: Data/Ora fine validità in formato <dd/MM/yyyy hh:mm:ss>
           example: 20/11/2021 17:32:12
@@ -505,20 +536,24 @@ components:
       type: object
       properties:
         cf:
+          #vale osservazione su tipizzazione CF
           type: string
           description: Codice Fiscale di Input
           example: '01234567890'
         dataEstrazione:
+          # indicare format date
           type: string
           description: Data/Ora estrazione in formato <dd/MM/yyyy hh:mm:ss>
           example: 20/11/2021 17:32:12
         domiciliDigitali:
+          # valutare la definizione di uno schema tipizzato da richiamare 
           required:
             - domicilioDigitale
             - infoUtilizzo
           type: object
           properties:
             domicilioDigitale:
+              # da verificare
               pattern: '"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"'
               type: string
               description: Indirizzo PEC Domicilio Digitale
@@ -544,10 +579,12 @@ components:
             - true
             - false
         dataOraVerifica:
+          # indicare format date-time
           type: string
           description: Data/Ora estrazione in formato <dd/MM/yyyy hh:mm:ss>
           example: 20/11/2021 17:32:12
     RispostaElencoDomiciliDigitali:
+      # valutare la definizione di uno schema tipizzato da richiamare 
       required:
         - elenco
       type: object
@@ -559,6 +596,7 @@ components:
           type: object
           properties:
             domicilioDigitale:
+              # da verificare
               pattern: '"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"'
               type: string
               description: Indirizzo PEC Domicilio Digitale
@@ -577,10 +615,11 @@ components:
       type: object
       properties:
         stato:
+          # valutare indicazione precedente circa la possibilità di definire enum
           type: string
           description: Stato della richiesta
           example: Processamento
-        messaggio:
+        messaggio:          
           type: string
           description: Messaggio descrittivo dello stato della richiesta
           example: Richiesta elenco in fase di processamento
