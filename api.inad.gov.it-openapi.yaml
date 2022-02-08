@@ -1,0 +1,545 @@
+openapi: 3.0.1
+info:
+  title: INAD - Domicilio Digitale
+  description: |-
+    API rese disponibili da INAD al Catalogo delle API previsto nel modello di interoperabilità delle pubbliche amministrazioni.
+
+    Pattern Model applicati:
+    - [ID_AUTH_CHANNEL_01] Direct Trust Transport-Level Security
+    - [BLOCK_REST] Blocking REST
+    - [ID_AUTH_REST_02] Direct Trust con certificato X.509
+    - [INTEGRITY_REST_01] Integrità del payload del messaggio REST
+    - [NONBLOCK_PULL_REST] Not Blocking Pull REST
+  contact:
+    name: AgID - Agenzia per l'Italia Digitale
+    url: https://www.agid.gov.it/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 1.0.0
+servers:
+  - url: https://api.inad.gov.it/rest/inad/v1/domiciliodigitale
+    description: Generated server url
+tags:
+  - name: API ESTRAZIONI MULTIPLE
+  - name: API ESTRAZIONI PUNTUALI
+paths:
+  /elenco:
+    post:
+      tags:
+        - API ESTRAZIONI MULTIPLE
+      description: Consente di inserire una richiesta di estrazione di domicili digitali a partire dall'elenco di codici fiscali forniti (fino ad un massimo di 1.000). Per ogni codice fiscale si ottiene il domicilio digitale corrispondente al momento dell'estrazione e, in caso di domicilio digitale eletto in qualità di Professionista, anche l'attività professionale esercitata. L'elaborazione della richiesta è asincrona. L'elenco, identificato da un codice univoco, è reso disponibile mediante un servizio di recupero.
+      operationId: richiestaElencoDomiciliDigitali
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RichiestaElencoDomiciliDigitali'
+        required: true
+      responses:
+        '202':
+          description: JSON di risposta attraverso il quale l'Erogatore fornisce, insieme all'acknowledgement della richiesta, l'URL per interrogare lo stato di processamento utilizzando l'<i>HTTP header Location</i>. L'elenco è individuato da un codice identificativo univoco.
+          headers:
+            Location:
+              description: URL dove verificare lo stato
+              style: simple
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaRichiestaElencoDomiciliDigitali'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '401':
+          description: UNAUTHORIZED
+          content:
+            application/json: {}
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json: {}
+        '404':
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '500':
+          description: INTERNAL_SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '503':
+          description: SERVICE_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+  /{cf}:
+    get:
+      tags:
+        - API ESTRAZIONI PUNTUALI
+      description: Consente di ottenere il domicilio digitale corrispondente al codice fiscale al momento della consultazione e, in caso di domicilio digitale eletto in qualità di Professionista, anche l'attività professionale esercitata.
+      operationId: recuperoDomicilioDigitale
+      parameters:
+        - name: cf
+          in: path
+          description: CF per cui si effettua la ricerca
+          required: true
+          schema:
+            pattern: ^([0-9]{11})|([A-Za-z]{6}[0-9]{2}[A-Za-z]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1})$
+            type: string
+          example: '01234567890'
+      responses:
+        '200':
+          description: JSON di risposta che restituisce il domicilio digitale estratto. Per un codice fiscale è possibile estrarre al massimo due domicili digitali eletti in qualità di persona fisica/Ente e/o Professionista. Per domicilio digitale eletto in qualità di Professionista è estratta anche l'attività professionale esercitata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaRicercaDomicilioDigitale'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '401':
+          description: UNAUTHORIZED
+          content:
+            application/json: {}
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json: {}
+        '404':
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '500':
+          description: INTERNAL_SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '503':
+          description: SERVICE_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+  /verifica/{cf}:
+    get:
+      tags:
+        - API ESTRAZIONI PUNTUALI
+      description: Fornito in input il domicilio digitale (indirizzo PEC), codice fiscale e data, il servizio consente di verificare se, alla data indicata, il domicilio digitale era associato al codice fiscale indicato.
+      operationId: verificaDomicilioDigitale
+      parameters:
+        - name: cf
+          in: path
+          description: Codice fiscale del domicilio da ricercare
+          required: true
+          schema:
+            pattern: ^([0-9]{11})|([A-Za-z]{6}[0-9]{2}[A-Za-z]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1})$
+            type: string
+          example: '01234567890'
+        - name: domicilioDigitale
+          in: query
+          description: Indirizzo del domicilio da ricercare
+          required: true
+          schema:
+            pattern: ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$
+            type: string
+        - name: data
+          in: query
+          description: Data in formato <ddMMyyyy>
+          required: true
+          schema:
+            pattern: ^(3[01]|[12][0-9]|0[1-9])(1[0-2]|0[1-9])[0-9]{4}$
+            type: string
+            format: date
+          example: '03112021'
+      responses:
+        '200':
+          description: JSON di risposta che restituisce l'esito della verifica del domicilio digitale associato (<i>true</i>) o non associato (<i>false</i>).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaVerificaDomicilioDigitale'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '401':
+          description: UNAUTHORIZED
+          content:
+            application/json: {}
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json: {}
+        '404':
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '500':
+          description: INTERNAL_SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '503':
+          description: SERVICE_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+  /elenco/{id}/risultato:
+    get:
+      tags:
+        - API ESTRAZIONI MULTIPLE
+      description: Consente di recuperare l'elenco dei domicili digitali individuato dal codice identificativo univoco.
+      operationId: recuperoElencoDomiciliDigitali
+      parameters:
+        - name: id
+          in: path
+          description: Identificativo univoco della richiesta di elenco
+          required: true
+          schema:
+            maxLength: 40
+            type: string
+          example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
+      responses:
+        '200':
+          description: Risposta di tipo JSON che rappresenta l'elenco dei domicili digitali estratti. Per un codice fiscale è possibile estrarre al massimo due domicili digitali eletti in qualità di persona fisica/Ente e/o Professionista. I codici fiscali per i quali non è presente il domicilio digitale sono comunque indicati nella risposta con informazione non valorizzata. L'elenco è reso disponibile per un massimo di 48 ore, trascorse le quali l'elenco viene cancellato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaElencoDomiciliDigitali'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '401':
+          description: UNAUTHORIZED
+          content:
+            application/json: {}
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json: {}
+        '404':
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '500':
+          description: INTERNAL_SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '503':
+          description: SERVICE_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+  /elenco/{id}:
+    get:
+      tags:
+        - API ESTRAZIONI MULTIPLE
+      description: Consente di verificare lo stato del processamento della richiesta dell'elenco dei domicili digitali individuato dal codice identificativo univoco.
+      operationId: verificaStatoRichiestaElencoDomiciliDigitali
+      parameters:
+        - name: id
+          in: path
+          description: Identificativo univoco della richiesta di elenco
+          required: true
+          schema:
+            maxLength: 40
+            type: string
+          example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
+      responses:
+        '200':
+          description: JSON di risposta attraverso il quale l'Erogatore indica, sulla base dello stato del processamento, che l'operazione non è completata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali'
+        '303':
+          description: JSON di risposta attraverso il quale l'Erogatore indica, sulla base dello stato del processamento, che l'elenco è pronto all'URL indicato nell'<i>HTTP header Location</i>.
+          headers:
+            Location:
+              description: URL dove scaricare il report
+              style: simple
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RispostaStatoRichiestaElencoDomiciliDigitali'
+        '400':
+          description: BAD_REQUEST
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '401':
+          description: UNAUTHORIZED
+          content:
+            application/json: {}
+        '403':
+          description: FORBIDDEN
+          content:
+            application/json: {}
+        '404':
+          description: NOT_FOUND
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '500':
+          description: INTERNAL_SERVER_ERROR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+        '503':
+          description: SERVICE_UNAVAILABLE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errore'
+components:
+  schemas:
+    Errore:
+      required:
+        - status
+        - type
+      type: object
+      properties:
+        status:
+          type: string
+          description: Codice di errore
+          example: <HTTP_CODE>
+          enum:
+            - '400'
+            - '401'
+            - '403'
+            - '404'
+            - '500'
+            - '503'
+        type:
+          type: string
+          description: Tipologia di errore
+          example: <HTTP_STATUS>
+          enum:
+            - BAD_REQUEST
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - NOT_FOUND
+            - INTERNAL_SERVER_ERROR
+            - SERVICE_UNAVAILABLE
+        detail:
+          type: string
+          description: Descrizione di dettaglio dello specifico problema verificatosi
+          example: <detail_error>
+      description: Modello di risposta in caso di errore
+    RispostaRichiestaElencoDomiciliDigitali:
+      required:
+        - dataOraRichiesta
+        - id
+        - messaggio
+        - stato
+      type: object
+      properties:
+        stato:
+          type: string
+          description: Stato della richiesta
+          example: PRESA_IN_CARICO
+          enum:
+            - PRESA_IN_CARICO
+            - IN_ELABORAZIONE
+            - DISPONIBILE
+        messaggio:
+          type: string
+          description: Messaggio di conferma dell'avvenuta presa in carico della richiesta
+          example: Richiesta elenco presa in carico
+        id:
+          maxLength: 40
+          minLength: 20
+          type: string
+          description: Codice identificativo univoco della richiesta di estrazione
+          example: f8c3de3d-1fea-4d7c-a8b0-29f63c4c3454
+        dataOraRichiesta:
+          pattern: ^(3[01]|[12][0-9]|0[1-9])\/(1[0-2]|0[1-9])\/[0-9]{4} ([0-1][1-9]|2[0-3]):([0-5][1-9]):([0-5][1-9])$
+          type: string
+          description: Data/Ora di inserimento della richiesta in formato <dd/MM/yyyy hh:mm:ss>
+          format: date-time
+      description: Modello di risposta per Richiesta Elenco Domicili Digitali
+    CodiceFiscale:
+      pattern: ^([0-9]{11})|([A-Za-z]{6}[0-9]{2}[A-Za-z]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1})$
+      type: object
+      properties:
+        codiceFiscale:
+          pattern: ^([0-9]{11})|([A-Za-z]{6}[0-9]{2}[A-Za-z]{1}[0-9]{2}[A-Za-z]{1}[0-9]{3}[A-Za-z]{1})$
+          type: string
+          example: RRANGL74M28R701V
+      description: Modello Codice fiscale
+      example: RRANGL74M28R701V
+    RichiestaElencoDomiciliDigitali:
+      required:
+        - codiciFiscali
+        - riferimentoPratica
+      type: object
+      properties:
+        codiciFiscali:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodiceFiscale'
+        riferimentoPratica:
+          type: string
+          description: Riferimento del procedimento amministrativo per il quale si richiede l'elenco
+          example: <NUM_PROTOCOLLO|NUM_FASCICOLO|NUM_VERBALE>
+      description: Modello di richiesta per Elenco Domicili Digitali
+    DomicilioDigitale:
+      pattern: ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$
+      type: object
+      properties:
+        domicilioDigitale:
+          pattern: ^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$
+          type: string
+          example: example@pec.it
+      description: Modello Domicilio Digitale
+      example: example@pec.it
+    ElementoDomicilioDigitale:
+      required:
+        - domicilioDigitale
+        - infoUtilizzo
+      type: object
+      properties:
+        domicilioDigitale:
+          $ref: '#/components/schemas/DomicilioDigitale'
+        professioneEsercitata:
+          type: string
+          description: Professione esercitata. Non presente per Persona Fisica/Ente
+          example: Avvocato
+        infoUtilizzo:
+          $ref: '#/components/schemas/InfoUtilizzo'
+      description: Modello di risposta per singolo Domicilio Digitale
+    InfoUtilizzo:
+      required:
+        - dataFineValidita
+        - motivazione
+      type: object
+      properties:
+        motivazione:
+          type: string
+          description: Motivazione cessazione
+          example: CESSAZIONE_UFFICIO
+          enum:
+            - CESSAZIONE_UFFICIO
+            - CESSAZIONE_VOLONTARIA
+        dataFineValidita:
+          pattern: ^(3[01]|[12][0-9]|0[1-9])\/(1[0-2]|0[1-9])\/[0-9]{4} ([0-1][1-9]|2[0-3]):([0-5][1-9]):([0-5][1-9])$
+          type: string
+          description: Data/Ora fine validità in formato <dd/MM/yyyy hh:mm:ss>
+          format: date-time
+      description: Modello di risposta Info Utilizzo per singolo Domicilio Digitale
+    RispostaRicercaDomicilioDigitale:
+      required:
+        - cf
+        - dataEstrazione
+        - domiciliDigitali
+      type: object
+      properties:
+        cf:
+          $ref: '#/components/schemas/CodiceFiscale'
+        dataEstrazione:
+          pattern: ^(3[01]|[12][0-9]|0[1-9])\/(1[0-2]|0[1-9])\/[0-9]{4} ([0-1][1-9]|2[0-3]):([0-5][1-9]):([0-5][1-9])$
+          type: string
+          description: Data/Ora estrazione in formato <dd/MM/yyyy hh:mm:ss>
+          format: date-time
+        domiciliDigitali:
+          type: array
+          description: Elenco Domicili Digitali afferenti al Codice Fiscale di Input
+          items:
+            $ref: '#/components/schemas/ElementoDomicilioDigitale'
+      description: Modello di risposta per Ricerca Domicilio Digitale
+    RispostaVerificaDomicilioDigitale:
+      required:
+        - dataOraVerifica
+        - esito
+      type: object
+      properties:
+        esito:
+          type: boolean
+          description: Esito della verifica
+          example: true
+          enum:
+            - true
+            - false
+        dataOraVerifica:
+          pattern: ^(3[01]|[12][0-9]|0[1-9])\/(1[0-2]|0[1-9])\/[0-9]{4} ([0-1][1-9]|2[0-3]):([0-5][1-9]):([0-5][1-9])$
+          type: string
+          description: Data/Ora estrazione in formato <dd/MM/yyyy hh:mm:ss>
+          format: date-time
+      description: Modello di risposta per Verifica Domicilio Digitale
+    RispostaElencoDomiciliDigitali:
+      required:
+        - elenco
+      type: object
+      properties:
+        elenco:
+          type: array
+          description: Elenco Domicili Digitali estratti
+          items:
+            $ref: '#/components/schemas/RispostaRicercaDomicilioDigitale'
+      description: Modello di risposta per Elenco Domicili Digitali
+    RispostaStatoRichiestaElencoDomiciliDigitali:
+      required:
+        - messaggio
+        - stato
+      type: object
+      properties:
+        stato:
+          type: string
+          description: Stato della richiesta
+          example: IN_ELABORAZIONE
+          enum:
+            - PRESA_IN_CARICO
+            - IN_ELABORAZIONE
+            - DISPONIBILE
+        messaggio:
+          type: string
+          description: Messaggio descrittivo dello stato della richiesta
+          example: Richiesta elenco in fase di processamento
+        href:
+          type: string
+          description: Posizione alla quale è disponibile scaricare il risultato dell'elaborazione.
+          example: https://<dominioOrganizzativo>/rest/inad/v1/domiciliodigitale/elenco/{id}/risultato
+      description: Modello di risposta per Stato Richiesta Elenco Domicili Digitali
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
