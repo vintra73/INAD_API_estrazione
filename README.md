@@ -4,4 +4,4 @@
 
  ## IMPORTANT
  
- cosiderare l'OpenAPI presenti in api.inad.gov.it-openapi.yaml 
+work in progeress
