@@ -288,24 +288,29 @@ components:
     Errore:
       required:
         - status
-        - type
+        - title
       type: object
+      additionalProperties: false
+      description: Modello di risposta in caso di errore
       properties:
         status:
-          type: string
+          type: integer
+          format: int32
           description: Codice di errore
-          example: <HTTP_CODE>
+          example: 400
+          maximum: 600
+          minimum: 100
           enum:
-            - '400'
-            - '401'
-            - '403'
-            - '404'
-            - '500'
-            - '503'
-        type:
+            - 400
+            - 401
+            - 403
+            - 404
+            - 500
+            - 503
+        title:
           type: string
           description: Tipologia di errore
-          example: <HTTP_STATUS>
+          example: BAD_REQUEST
           enum:
             - BAD_REQUEST
             - UNAUTHORIZED
@@ -317,7 +322,7 @@ components:
           type: string
           description: Descrizione di dettaglio dello specifico problema verificatosi
           example: <detail_error>
-      description: Modello di risposta in caso di errore
+          maxLength: 1024
     InfoUtilizzo:
       required:
         - dataFineValidita
